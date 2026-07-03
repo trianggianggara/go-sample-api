@@ -1,0 +1,44 @@
+name: Promote Environment
+
+on:
+  workflow_dispatch:
+    inputs:
+      target_env:
+        description: 'Target environment to promote to'
+        required: true
+        type: choice
+        options:
+          - staging
+          - prod
+      image_tag:
+        description: 'Image tag to deploy (e.g., abc1234)'
+        required: true
+        type: string
+
+jobs:
+  promote:
+    name: Promote to ${{ inputs.target_env }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Validate image tag exists
+        run: |
+          echo "Promoting image tag '${{ inputs.image_tag }}' to ${{ inputs.target_env }}"
+
+      - name: Update ${{ inputs.target_env }} kustomization image tag
+        run: |
+          cd kubernetes/overlays/${{ inputs.target_env }}
+          sed -i "s/newTag: .*/newTag: ${{ inputs.image_tag }}/" kustomization.yaml
+
+      - name: Commit and push
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add kubernetes/overlays/${{ inputs.target_env }}/kustomization.yaml
+          git diff --staged --quiet || git commit -m "promote: deploy ${{ inputs.image_tag }} to ${{ inputs.target_env }}"
+          git push

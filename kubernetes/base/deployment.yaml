@@ -1,0 +1,48 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: go-sample-api
+  labels:
+    app: go-sample-api
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: go-sample-api
+  template:
+    metadata:
+      labels:
+        app: go-sample-api
+    spec:
+      containers:
+      - name: go-sample-api
+        image: go-sample-api
+        ports:
+        - containerPort: 8080
+          protocol: TCP
+        env:
+        - name: APP_ENV
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace
+        - name: PORT
+          value: "8080"
+        resources:
+          requests:
+            cpu: "50m"
+            memory: "32Mi"
+          limits:
+            cpu: "200m"
+            memory: "128Mi"
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8080
+          initialDelaySeconds: 5
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /ready
+            port: 8080
+          initialDelaySeconds: 3
+          periodSeconds: 5
