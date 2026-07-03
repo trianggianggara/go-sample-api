@@ -1,6 +1,9 @@
 name: Promote Environment
 
 on:
+  push:
+    paths:
+      - '.github/workflows/promote.yml'
   workflow_dispatch:
     inputs:
       target_env:
