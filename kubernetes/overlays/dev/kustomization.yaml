@@ -6,7 +6,7 @@ resources:
 images:
   - name: go-sample-api
     newName: ghcr.io/trianggianggara/go-sample-api
-    newTag: 9cbc90d
+    newTag: d0ea1f8
 replicas:
   - name: go-sample-api
     count: 1
